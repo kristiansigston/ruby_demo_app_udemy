@@ -1,13 +1,19 @@
 class ApplicationController < ActionController::Base
-  def gravatar_for(user)
-    email_address = user.email.downcase
-    hash = Digest::MD5.hexdigest(email_address)
-    gravatar_url = "https://www.gravatar.com/avatar/#{hash}"
-    image_tag(gravatar_url, alt: user.username)
+
+  helper_method :current_user, :logged_in?
+
+  def current_user
+    @current_user ||= User.find(session[:user_id]) if session[:user_id]
   end
 
-  def random_image_for(options)
-    url = "<img src='https://source.unsplash.com/random/200x200' />"
-    url
+  def logged_in?
+    !!current_user
+  end
+
+  def require_user
+    if !logged_in?
+      flash[:alert] = 'You must be logged in to perform that action'
+      redirect_to login_path
+    end
   end
 end
